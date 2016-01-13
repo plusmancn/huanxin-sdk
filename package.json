@@ -1,6 +1,6 @@
 {
   "name": "huanxin-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The node sdk of Huanxin Rest API",
   "main": "index.js",
   "scripts": {
