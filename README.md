@@ -1,5 +1,5 @@
 # huanxin-sdk
-The node sdk of Huanxin Rest API
+The node sdk of Huanxin Rest API for high performance
 
 ## Install
 ```
@@ -7,6 +7,8 @@ npm install huanxin-sdk
 ```
 
 ## Usage
+> 详细用法请移步：test/，建议使用 [redis](http://redis.io) 存储token
+
 ```
 'use strict';
 var Huanxin = require('huanxin-sdk');
@@ -15,11 +17,25 @@ var huanxin = new Huanxin({
     app_name      :  'your_app_name',
     client_id     :  'your_client_id',
     client_secret :  'your_client_secret',
-    tokenGet: function(){
-        // token 缓存层，内部不会调用 getToken 方法实时获取
+    tokenSet: function(err, data){
+        /**
+         *  data = {
+         *      access_token: '环信返回的token值',
+         *      expires_in: '过期时间（秒），按照当前返回是60天，但是实际是7天就会过期，不可用',
+         *      application: '应用id'
+         *  }
+         */
+        // 518400 设置6天过期
+        redisClient.setex('HXTOKEN_TEST1', 518400, data.access_token, function(err, res){
+            DEBUG_HUAXIN('TokenSet err %j, res %s', err, res);
+        });
     },
-    tokenSet: function(){
-        // token 存储方法
+    tokenGet: function(callback){
+        // token 缓存层，内部不会调用 getToken 方法实时获取
+        /**
+         * @return {String} token
+         */
+        redisClient.get('HXTOKEN_TEST1', callback);
     }
 });
 
@@ -32,6 +48,8 @@ huanxin.getToken(function(err, data){
 ## Method
 
 1）**getToken**  
+调用环信接口获取token，并调用tokenSet方法。
+
 Success Return 
 ```
 {
@@ -40,7 +58,23 @@ Success Return
   "application":"c03b3e30-046a-11e4-8ed1-5701cdaaa0e4"
 }
 ```
-2）**sendTxt**  
+
+2） **onceGetToken**
+为了避免频繁请求环信接口，token获取顺序如下  
+1. 从内存读取
+2. 从tokenGet方法读
+3. 调用getToken方法，从环信请求，并缓存
+
+```
+huanxin.onceGetToken(function(err, token){
+    //...something to do ...
+});
+```
+Sucess Return {Stirng} token
+
+
+
+3）**sendTxt**  
 ```
 /**
  * @desc 发送文本消息
@@ -60,4 +94,6 @@ Before run `mocha`，Please make sure the `/config/config.js` is exists。The ex
 mocha
 ```
 
-
+## Todo
+* 继续晚上Huanxin.Message实例方法
+* 增加环信 Rest API 覆盖范围
