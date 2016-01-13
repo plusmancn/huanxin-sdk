@@ -61,6 +61,7 @@ Success Return
 
 2） **onceGetToken**
 为了避免频繁请求环信接口，token获取顺序如下  
+
 1. 从内存读取
 2. 从tokenGet方法读
 3. 调用getToken方法，从环信请求，并缓存
@@ -85,6 +86,9 @@ Sucess Return {Stirng} token
 
 // 消息实例初始化
 var message = new Huanxin.Message('cn_18667903755', 'hello world!', 'cn_10000');
+huaxin.sendTxt(message, function(err, res){
+    //...something to do ...
+});
 ```
 
 
